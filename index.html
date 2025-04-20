@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopi Djakarta - Premium Coffee Experience</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.4.8/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1500&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 90vh;
+        }
+        
+        .navbar {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .navbar.scrolled {
+            background-color: rgba(25, 25, 25, 0.9);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .cart-item {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #5A3921;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #492F1B;
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid #5A3921;
+            color: #5A3921;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5A3921;
+            color: white;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        
+        .mobile-menu {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        
+        #cartDrawer {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+        }
+        
+        #cartDrawer.active {
+            transform: translateX(0);
+        }
+        
+        .overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="navbar fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="#" class="text-white font-bold text-2xl">Kopi DDjakarta</a>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="text-white hover:text-yellow-300 transition duration-200">Home</a>
+                    <a href="#about" class="text-white hover:text-yellow-300 transition duration-200">About</a>
+                    <a href="#products" class="text-white hover:text-yellow-300 transition duration-200">Produk</a>
+                </div>
+                
+                <!-- Cart Icon (Desktop) -->
+                <div class="hidden md:block">
+                    <button id="cartBtn" class="relative p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span id="cartCount" class="cart-count hidden">0</span>
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobileMenuBtn" class="text-white focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu fixed top-0 left-0 w-64 h-full bg-gray-900 z-50 p-5">
+        <div class="flex justify-end">
+            <button id="closeMenuBtn" class="text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="mt-8 flex flex-col space-y-4">
+            <a href="#home" class="text-white hover:text-yellow-300 transition duration-200">Home</a>
+            <a href="#about" class="text-white hover:text-yellow-300 transition duration-200">About</a>
+            <a href="#products" class="text-white hover:text-yellow-300 transition duration-200">Produk</a>
+            <button id="mobileCartBtn" class="flex items-center text-white hover:text-yellow-300 transition duration-200">
+                <span>Keranjang</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span id="mobileCartCount" class="ml-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Cart Drawer -->
+    <div id="cartDrawer" class="fixed top-0 right-0 w-full md:w-96 h-full bg-white z-50 shadow-lg overflow-y-auto">
+        <div class="p-5">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Keranjang Belanja</h2>
+                <button id="closeCartBtn" class="text-gray-600 hover:text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="cartItems" class="mt-4 space-y-3">
+                <!-- Cart items will be added here -->
+                <div class="empty-cart text-center py-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p class="text-gray-500 mt-4">Keranjang belanja Anda kosong</p>
+                </div>
+            </div>
+            
+            <div id="cartSummary" class="mt-8 border-t pt-4 hidden">
+                <div class="flex justify-between mb-2">
+                    <span class="font-medium">Total:</span>
+                    <span id="cartTotal" class="font-bold">Rp 0</span>
+                </div>
+                <button id="checkoutBtn" class="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition duration-200 mt-2">
+                    Pesan via WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Overlay -->
+    <div id="overlay" class="overlay fixed inset-0 bg-black bg-opacity-50 z-40"></div>
+    
+    <!-- Hero Section -->
+    <section id="home" class="hero-section flex items-center">
+        <div class="container mx-auto px-4 text-center text-white" data-aos="fade-up" data-aos-duration="1000">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Kopi Djakarta</h1>
+            <p class="text-xl md:text-2xl mb-8">Nikmati Kopi Premium dari Djakarta</p>
+            <a href="#products" class="bg-yellow-500 text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-yellow-400 transition duration-200 inline-block">Lihat Menu</a>
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Tentang Kami</h2>
+                <div class="w-24 h-1 bg-yellow-500 mx-auto"></div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0" data-aos="fade-right" data-aos-delay="100">
+                    <img src="https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1500&q=80" alt="Coffee Shop" class="rounded-lg shadow-md w-full">
+                </div>
+                
+                <div class="md:w-1/2 md:pl-12" data-aos="fade-left" data-aos-delay="200">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Racikan Kopi Premium</h3>
+                    <p class="text-gray-600 mb-6">Kopi Djakarta hadir dari perpaduan biji kopi pilihan Indonesia yang diolah dengan teknik modern untuk menghasilkan cita rasa yang khas dan nikmat.</p>
+                    
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="text-gray-700">Biji kopi premium dari seluruh Indonesia</span>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="text-gray-700">Proses roasting yang presisi</span>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="text-gray-700">Disajikan dalam kemasan praktis</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Products Section -->
+    <section id="products" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Menu Kami</h2>
+                <div class="w-24 h-1 bg-yellow-500 mx-auto"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Cup Coffee Category -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="100">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Kopi Kemasan Cup</h3>
+                        
+                        <!-- Product 1 -->
+                        <div class="product-card bg-gray-50 rounded-lg p-4 mb-4 flex flex-col sm:flex-row items-center">
+                            <img src="img/3.jpg" alt="Kopi Cup Original" class="w-24 h-24 object-cover rounded-lg mb-4 sm:mb-0">
+                            <div class="sm:ml-6 flex-1">
+                                <h4 class="font-bold text-gray-800">Kopi Cup Original</h4>
+                                <p class="text-gray-600 text-sm mb-2">Kopi hitam dengan cita rasa khas asli Indonesia</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-800">Rp 15.000</span>
+                                    <button class="add-to-cart bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition duration-200 text-sm" 
+                                            data-id="cup-1" 
+                                            data-name="Kopi Cup Original" 
+                                            data-price="15000" 
+                                            data-image="/api/placeholder/120/120">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Product 2 -->
+                        <div class="product-card bg-gray-50 rounded-lg p-4 mb-4 flex flex-col sm:flex-row items-center">
+                            <img src="img/4.jpg" alt="Kopi Cup Latte" class="w-24 h-24 object-cover rounded-lg mb-4 sm:mb-0">
+                            <div class="sm:ml-6 flex-1">
+                                <h4 class="font-bold text-gray-800">Kopi Cup Latte</h4>
+                                <p class="text-gray-600 text-sm mb-2">Paduan kopi dan susu yang lembut dan creamy</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-800">Rp 18.000</span>
+                                    <button class="add-to-cart bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition duration-200 text-sm" 
+                                            data-id="cup-2" 
+                                            data-name="Kopi Cup Latte" 
+                                            data-price="18000" 
+                                            data-image="/api/placeholder/120/120">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Product 3 -->
+                        <div class="product-card bg-gray-50 rounded-lg p-4 flex flex-col sm:flex-row items-center">
+                            <img src="img/5.jpg" alt="Kopi Cup Mocha" class="w-24 h-24 object-cover rounded-lg mb-4 sm:mb-0">
+                            <div class="sm:ml-6 flex-1">
+                                <h4 class="font-bold text-gray-800">Kopi Cup Mocha</h4>
+                                <p class="text-gray-600 text-sm mb-2">Perpaduan kopi, susu, dan cokelat yang nikmat</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-800">Rp 20.000</span>
+                                    <button class="add-to-cart bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition duration-200 text-sm" 
+                                            data-id="cup-3" 
+                                            data-name="Kopi Cup Mocha" 
+                                            data-price="20000" 
+                                            data-image="/api/placeholder/120/120">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bottle Coffee Category -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="200">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Kopi Kemasan Botol</h3>
+                        
+                        <!-- Product 1 -->
+                        <div class="product-card bg-gray-50 rounded-lg p-4 mb-4 flex flex-col sm:flex-row items-center">
+                            <img src="img/6.jpg" alt="Kopi Botol Original" class="w-24 h-24 object-cover rounded-lg mb-4 sm:mb-0">
+                            <div class="sm:ml-6 flex-1">
+                                <h4 class="font-bold text-gray-800">Kopi Botol Original</h4>
+                                <p class="text-gray-600 text-sm mb-2">Kopi hitam kemasan botol praktis 250ml</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-800">Rp 25.000</span>
+                                    <button class="add-to-cart bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition duration-200 text-sm" 
+                                            data-id="bottle-1" 
+                                            data-name="Kopi Botol Original" 
+                                            data-price="25000" 
+                                            data-image="/api/placeholder/120/120">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Product 2 -->
+                        <div class="product-card bg-gray-50 rounded-lg p-4 mb-4 flex flex-col sm:flex-row items-center">
+                            <img src="img/3.jpg" alt="Kopi Botol Latte" class="w-24 h-24 object-cover rounded-lg mb-4 sm:mb-0">
+                            <div class="sm:ml-6 flex-1">
+                                <h4 class="font-bold text-gray-800">Kopi Botol Latte</h4>
+                                <p class="text-gray-600 text-sm mb-2">Kopi latte dalam kemasan botol praktis 250ml</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-800">Rp 28.000</span>
+                                    <button class="add-to-cart bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition duration-200 text-sm" 
+                                            data-id="bottle-2" 
+                                            data-name="Kopi Botol Latte" 
+                                            data-price="28000" 
+                                            data-image="/api/placeholder/120/120">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Product 3 -->
+                        <div class="product-card bg-gray-50 rounded-lg p-4 flex flex-col sm:flex-row items-center">
+                            <img src="img/7.jpg" alt="Kopi Botol Aren" class="w-24 h-24 object-cover rounded-lg mb-4 sm:mb-0">
+                            <div class="sm:ml-6 flex-1">
+                                <h4 class="font-bold text-gray-800">Kopi Botol Aren</h4>
+                                <p class="text-gray-600 text-sm mb-2">Kopi dengan gula aren dalam kemasan botol 250ml</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-gray-800">Rp 30.000</span>
+                                    <button class="add-to-cart bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition duration-200 text-sm" 
+                                            data-id="bottle-3" 
+                                            data-name="Kopi Botol Aren" 
+                                            data-price="30000" 
+                                            data-image="/api/placeholder/120/120">
+                                        Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-8 md:mb-0">
+                    <h3 class="text-2xl font-bold mb-4">Kopi Djakarta</h3>
+                    <p class="text-gray-400 max-w-md">Menyajikan kopi premium Indonesia dalam kemasan praktis untuk dinikmati kapanpun dan dimanapun.</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Hubungi Kami</h4>
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <span class="text-gray-400">+62 888-9275-189</span>
+                    </div>
+                    
+                    <div class="flex items-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-gray-400">info@kopiDjakarta.com</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span class="text-gray-400">Djakarta, Indonesia</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2025 Kopi Djakarta. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black opacity-50 transition-opacity"></div>
+            
+            <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all w-full max-w-lg z-10">
+                <div class="p-6">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="text-xl font-bold text-gray-800">Lengkapi Data Pesanan</h3>
+                        <button id="closeModalBtn" class="text-gray-400 hover:text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="checkoutForm" class="mt-4">
+                        <div class="mb-4">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Nama</label>
+                            <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="address" class="block text-gray-700 font-medium mb-2">Alamat Lengkap</label>
+                            <textarea id="address" name="address" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" required></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2">Pesanan</label>
+                            <div id="orderSummary" class="bg-gray-50 p-3 rounded-md text-sm max-h-40 overflow-y-auto"></div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-700">Total Pembayaran:</span>
+                                <span id="modalTotal" class="font-bold text-gray-800">Rp 0</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition duration-200">
+                            Proses Pesanan via WhatsApp
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.4.8/sweetalert2.min.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+        
+        // DOM Elements
+        const navbar = document.querySelector('.navbar');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const cartDrawer = document.getElementById('cartDrawer');
+        const cartBtn = document.getElementById('cartBtn');
+        const mobileCartBtn = document.getElementById('mobileCartBtn');
+        const closeCartBtn = document.getElementById('closeCartBtn');
+        const overlay = document.getElementById('overlay');
+        const cartItems = document.getElementById('cartItems');
+        const cartSummary = document.getElementById('cartSummary');
+        const cartCount = document.getElementById('cartCount');
+        const mobileCartCount = document.getElementById('mobileCartCount');
+        const cartTotal = document.getElementById('cartTotal');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const checkoutModal = document.getElementById('checkoutModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const orderSummary = document.getElementById('orderSummary');
+        const modalTotal = document.getElementById('modalTotal');
+        const checkoutForm = document.getElementById('checkoutForm');
+        
+        // Cart State
+        let cart = [];
+        
+        // Functions
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function toggleCartDrawer() {
+            cartDrawer.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function toggleCheckoutModal() {
+            checkoutModal.classList.toggle('hidden');
+            
+            if (!checkoutModal.classList.contains('hidden')) {
+                updateOrderSummary();
+            }
+        }
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+        }
+        
+        function addToCart(product) {
+            const existingProductIndex = cart.findIndex(item => item.id === product.id);
+            
+            if (existingProductIndex > -1) {
+                cart[existingProductIndex].quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: 1
+                });
+            }
+            
+            updateCart();
+            
+            Swal.fire({
+                title: 'Produk Ditambahkan!',
+                text: `${product.name} telah ditambahkan ke keranjang`,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+        
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+        
+        function changeQuantity(productId, action) {
+            const productIndex = cart.findIndex(item => item.id === productId);
+            
+            if (productIndex > -1) {
+                if (action === 'increase') {
+                    cart[productIndex].quantity += 1;
+                } else if (action === 'decrease') {
+                    if (cart[productIndex].quantity > 1) {
+                        cart[productIndex].quantity -= 1;
+                    } else {
+                        removeFromCart(productId);
+                        return;
+                    }
+                }
+                
+                updateCart();
+            }
+        }
+        
+        function getCartTotal() {
+            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        }
+        
+        function updateCart() {
+            // Update cart items display
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-cart text-center py-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <p class="text-gray-500 mt-4">Keranjang belanja Anda kosong</p>
+                    </div>
+                `;
+                cartSummary.classList.add('hidden');
+            } else {
+                let cartItemsHTML = '';
+                
+                cart.forEach(item => {
+                    cartItemsHTML += `
+                        <div class="cart-item flex items-center p-3 bg-gray-50 rounded-lg">
+                            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                            <div class="ml-4 flex-1">
+                                <h4 class="font-medium text-gray-800">${item.name}</h4>
+                                <div class="flex justify-between items-center mt-2">
+                                    <div class="flex items-center">
+                                        <button class="decrease-quantity w-8 h-8 flex items-center justify-center bg-gray-200 rounded-l" data-id="${item.id}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                            </svg>
+                                        </button>
+                                        <span class="w-8 h-8 flex items-center justify-center bg-white border-t border-b border-gray-200">${item.quantity}</span>
+                                        <button class="increase-quantity w-8 h-8 flex items-center justify-center bg-gray-200 rounded-r" data-id="${item.id}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <span class="font-bold text-gray-800">${formatCurrency(item.price * item.quantity)}</span>
+                                </div>
+                            </div>
+                            <button class="remove-item ml-2 text-gray-400 hover:text-red-500" data-id="${item.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                cartItems.innerHTML = cartItemsHTML;
+                cartSummary.classList.remove('hidden');
+                
+                // Add event listeners to new elements
+                document.querySelectorAll('.increase-quantity').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        changeQuantity(btn.dataset.id, 'increase');
+                    });
+                });
+                
+                document.querySelectorAll('.decrease-quantity').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        changeQuantity(btn.dataset.id, 'decrease');
+                    });
+                });
+                
+                document.querySelectorAll('.remove-item').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        removeFromCart(btn.dataset.id);
+                    });
+                });
+            }
+            
+            // Update cart count
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            if (totalItems > 0) {
+                cartCount.textContent = totalItems;
+                cartCount.classList.remove('hidden');
+                mobileCartCount.textContent = totalItems;
+                mobileCartCount.classList.remove('hidden');
+            } else {
+                cartCount.classList.add('hidden');
+                mobileCartCount.classList.add('hidden');
+            }
+            
+            // Update total
+            cartTotal.textContent = formatCurrency(getCartTotal());
+        }
+        
+        function updateOrderSummary() {
+            let orderHTML = '';
+            
+            cart.forEach(item => {
+                orderHTML += `
+                    <div class="flex justify-between items-center mb-2">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span class="font-medium">${formatCurrency(item.price * item.quantity)}</span>
+                    </div>
+                `;
+            });
+            
+            orderSummary.innerHTML = orderHTML;
+            modalTotal.textContent = formatCurrency(getCartTotal());
+        }
+        
+        function generateWhatsAppMessage(formData) {
+            let message = `*Pesanan Kopi Djakarta*\n\n`;
+            message += `*Nama:* ${formData.name}\n`;
+            message += `*Alamat:* ${formData.address}\n\n`;
+            message += `*Detail Pesanan:*\n`;
+            
+            cart.forEach(item => {
+                message += `${item.name} x${item.quantity} = ${formatCurrency(item.price * item.quantity)}\n`;
+            });
+            
+            message += `\n*Total Pembayaran:* ${formatCurrency(getCartTotal())}`;
+            
+            return encodeURIComponent(message);
+        }
+        
+        // Event Listeners
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        closeMenuBtn.addEventListener('click', toggleMobileMenu);
+        
+        cartBtn.addEventListener('click', toggleCartDrawer);
+        mobileCartBtn.addEventListener('click', () => {
+            toggleMobileMenu();
+            setTimeout(toggleCartDrawer, 300);
+        });
+        closeCartBtn.addEventListener('click', toggleCartDrawer);
+        
+        overlay.addEventListener('click', () => {
+            if (mobileMenu.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+            
+            if (cartDrawer.classList.contains('active')) {
+                toggleCartDrawer();
+            }
+        });
+        
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const product = {
+                    id: btn.dataset.id,
+                    name: btn.dataset.name,
+                    price: parseInt(btn.dataset.price),
+                    image: btn.dataset.image
+                };
+                
+                addToCart(product);
+            });
+        });
+        
+        checkoutBtn.addEventListener('click', () => {
+            toggleCartDrawer();
+            setTimeout(toggleCheckoutModal, 300);
+        });
+        
+        closeModalBtn.addEventListener('click', toggleCheckoutModal);
+        
+        checkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                address: document.getElementById('address').value
+            };
+            
+            const whatsappMessage = generateWhatsAppMessage(formData);
+            const whatsappURL = `https://wa.me/628889275189?text=${whatsappMessage}`;
+            
+            window.open(whatsappURL, '_blank');
+            
+            // Reset cart
+            cart = [];
+            updateCart();
+            toggleCheckoutModal();
+            
+            Swal.fire({
+                title: 'Pesanan Terkirim!',
+                text: 'Anda akan diarahkan ke WhatsApp untuk menyelesaikan pesanan',
+                icon: 'success',
+                timer: 3000,
+                showConfirmButton: false
+            });
+        });
+        
+        // Initialize cart
+        updateCart();
+    </script>
+</body>
+</html>
